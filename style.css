@@ -1,0 +1,46 @@
+.container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+.row > .previous {
+    display: flex;
+    flex: 0 1 246px;
+    border: black solid 1px;
+    margin: 1px;
+    border-radius: 5px;
+    justify-content: end;
+    align-items: center;
+    padding: 0px 10px;
+    min-height: 20px;
+}
+
+
+.row > .display {
+    display: flex;
+    flex: 0 1 246px;
+    border: black solid 1px;
+    margin: 1px;
+    border-radius: 5px;
+    justify-content: end;
+    align-items: center;
+    padding: 10px;
+    min-height: 20px;
+}
+
+.row {
+    display: flex;
+    flex: auto;
+    justify-content: center;
+    align-items: center;
+}
+
+.row > div {
+    display: flex;
+    flex: 0 1 50px;
+    border: black solid 1px;
+    margin: 1px;
+    border-radius: 5px;
+    justify-content: center;
+    align-items: center;
+}
