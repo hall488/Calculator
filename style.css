@@ -1,7 +1,17 @@
-.container {
+.container{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.calc {
     display: flex;
     flex-direction: column;
-    width: 100%;
+    flex: 0 1 270px;
+    padding: 10px;
+    border: black solid 1px;
+    border-radius: 10px;
+    background-color: aqua;
 }
 .row > .previous {
     display: flex;
@@ -26,11 +36,11 @@
     align-items: center;
     padding: 10px;
     min-height: 20px;
+    
 }
 
 .row {
     display: flex;
-    flex: auto;
     justify-content: center;
     align-items: center;
 }
@@ -43,4 +53,24 @@
     border-radius: 5px;
     justify-content: center;
     align-items: center;
+    background-color: white;
+    padding: 5px 0px;
+    
+}
+
+.row .btn:hover {
+    background-color: teal;
+}
+
+sup {
+    position: relative;
+    bottom: 3px;
+}
+
+@keyframes invalidShake {
+    0% { transform: translateX(0); color: red; }
+    25% { transform: translateX(5px);}
+    50% { transform: translateX(-5px) }
+    75% { transform: translateX(5px) }
+    100% { transform: translateX(0); }
 }
