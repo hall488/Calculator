@@ -1,7 +1,8 @@
 let btns = document.querySelectorAll('.btn');
 let display = document.querySelector('.display');
+let previous = document.querySelector('.previous');
 
-const operators = ['add', 'subtract','multiply','divide','remainder'];
+const operators = ['multiply','divide','remainder', 'add', 'subtract'];
 const numbers = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
 
 //this uses the unique data value for each button to assign a function with the same value.
@@ -36,12 +37,14 @@ function assignBtn(b) {
         b.addEventListener('click', removeLastEntry);
     } else if(atr =='clear') {
         b.addEventListener('click', clearDisplay);
+    } else if(atr =='equal') {
+        b.addEventListener('click', calculate);
     }
 }
 
 function insertOp() {
     //console.log(this.getAttribute('data'));
-    if(!operators.includes(entry[entry.length-1])) {
+    if(!operators.includes(entry[entry.length-1]) && entry.length != 0) {
         entry.push(this.getAttribute('data'));
     }
     else {
@@ -52,7 +55,13 @@ function insertOp() {
 
 function insertNum() {
     //console.log(this.getAttribute('data'));
-    entry.push(this.getAttribute('data'));
+    if(numbers.includes(entry[entry.length-1])) {
+        entry[entry.length-1] += this.getAttribute('data');
+        updateDisplay();
+    } else {
+        entry.push(this.getAttribute('data'));
+    }
+    
 }
 
 function updateDisplay() {
@@ -63,6 +72,7 @@ function updateDisplay() {
             case 'subtract': return '-';
             case 'multiply': return '*';
             case 'divide': return '\u00F7';
+            case 'remainder': return '%';
             default: return e;
         }
     });
@@ -81,4 +91,39 @@ function invalidInput() {
 function clearDisplay() {
     entry.length = 0;
     updateDisplay();
+}
+
+function calculate() {
+
+    
+    operators.forEach(o => handleOperator(o));
+
+    if(entry.length == 1) {
+        previous.textContent = 'ANS = ' + entry[0];
+    }
+
+    
+    //calculate();
+}
+
+function handleOperator(operator) {
+    for(;entry.includes(operator);) {
+        let op = entry.indexOf(operator);
+        let a = entry[op - 1];
+        let b = entry[op + 1];
+        
+        
+        switch(operator) {
+            case 'multiply': result = a * b; break;
+            case 'divide' : result = a / b; break;
+            case 'remainder' : result = a % b; break;
+            case 'add' : result = parseInt(a) + parseInt(b); break;
+            case 'subtract' : result = parseInt(a) - parseInt(b); break;
+            default: console.log('error'); break;
+        }
+
+        entry.splice(op, 1);
+        entry.splice(op, 1);
+        entry[op-1] = result;
+    }
 }
