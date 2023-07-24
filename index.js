@@ -13,7 +13,7 @@ display.addEventListener('animationend', () => {
 });
 
 btns.forEach(b => {
-    console.log(b.getAttribute('data'));
+    //console.log(b.getAttribute('data'));
     assignBtn(b);
 });
 
@@ -38,7 +38,11 @@ function assignBtn(b) {
     } else if(atr =='clear') {
         b.addEventListener('click', clearDisplay);
     } else if(atr =='equal') {
-        b.addEventListener('click', calculate);
+        b.addEventListener('click', equals);
+    } else if(atr == 'left-para') {
+        b.addEventListener('click', insertLeftP);
+    } else if(atr =='right-para') {
+        b.addEventListener('click', insertRightP);
     }
 }
 
@@ -64,6 +68,24 @@ function insertNum() {
     
 }
 
+function insertLeftP() {
+    entry.push(this.getAttribute('data'));
+}
+
+function insertRightP() {
+    let lpCount = 0;
+    let rpCount = 0;
+    entry.forEach(e => {
+        if(e == 'left-para') lpCount++;
+        else if(e == 'right-para') rpCount++; 
+    })
+    if(operators.includes(entry[entry.length-1]) || lpCount <= rpCount) {
+        invalidInput();
+    } else {
+        entry.push('right-para');
+    }
+}
+
 function updateDisplay() {
     let toDisplay = entry.map(e => {
         
@@ -73,6 +95,8 @@ function updateDisplay() {
             case 'multiply': return '*';
             case 'divide': return '\u00F7';
             case 'remainder': return '%';
+            case 'left-para':return '(';
+            case 'right-para':return ')';
             default: return e;
         }
     });
@@ -93,37 +117,77 @@ function clearDisplay() {
     updateDisplay();
 }
 
-function calculate() {
+function equals() {
 
+    if(operators.includes(entry[entry.length-1]) && entry.length != 0) invalidInput();
+    else {
+
+        
+        calculate(entry);
+        operators.forEach(o => handleOperator(o, entry));
+
+        if(entry.length == 1) {
+            previous.textContent = 'ANS = ' + entry[0];
+            entry.length = 0;
+        }
+
+        updateDisplay();
+    }   
     
-    operators.forEach(o => handleOperator(o));
-
-    if(entry.length == 1) {
-        previous.textContent = 'ANS = ' + entry[0];
-    }
-
-    
-    //calculate();
 }
 
-function handleOperator(operator) {
-    for(;entry.includes(operator);) {
-        let op = entry.indexOf(operator);
-        let a = entry[op - 1];
-        let b = entry[op + 1];
+function calculate(array) {
+    console.log(array);
+    console.log(findPara(array));
+    for(;;) {
+        let [subArray, lP, rP] = findPara(array);
+        if(subArray != 0) {
+            for(;lP < rP; rP--) {
+                array.splice(lP, 1);
+            }
+            array[lP] = calculate(subArray);        
+        } else {
+            operators.forEach(o => handleOperator(o, array));
+            break;
+        }
+    }
+    
+
+    
+    
+    return array[0];
+}
+
+function handleOperator(operator, array) {
+    for(;array.includes(operator);) {
+        let op = array.indexOf(operator);
+        let a = array[op - 1];
+        let b = array[op + 1];
         
         
         switch(operator) {
             case 'multiply': result = a * b; break;
             case 'divide' : result = a / b; break;
             case 'remainder' : result = a % b; break;
-            case 'add' : result = parseInt(a) + parseInt(b); break;
-            case 'subtract' : result = parseInt(a) - parseInt(b); break;
-            default: console.log('error'); break;
+            case 'add' : result = parseFloat(a) + parseFloat(b); break;
+            case 'subtract' : result = parseFloat(a) - parseFloat(b); break;
+            default: console.log('Unexpected operator'); break;
         }
 
-        entry.splice(op, 1);
-        entry.splice(op, 1);
-        entry[op-1] = result;
+        array.splice(op, 1);
+        array.splice(op, 1);
+        array[op-1] = result;
     }
+}
+
+function findPara(array) {
+    let lContext = 0;
+    let rContext = 0;
+    for(let i = 0; i < array.length; i++) {
+        if(array[i] == 'left-para') lContext = i;
+        if(array[i] == 'right-para') rContext = i;
+        if(rContext != 0) return [array.slice(lContext+1, rContext), lContext, rContext];
+    }
+
+    return [0,0,0];
 }
