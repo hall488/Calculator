@@ -18,6 +18,13 @@ btns.forEach(b => {
 
 let entry = [];
 
+//okay this is fucking awesome just discovered this application of prototypes.
+//everytime we push to array we can update the display
+entry.push = function() {
+    Array.prototype.push.apply(this, arguments);
+    updateDisplay();
+}
+
 function assignBtn(b) {
     
     let atr = b.getAttribute('data');
@@ -25,6 +32,10 @@ function assignBtn(b) {
         b.addEventListener('click', insertOp);
     } else if(numbers.includes(atr)) {
         b.addEventListener('click', insertNum);
+    } else if(atr == 'backspace') {
+        b.addEventListener('click', removeLastEntry);
+    } else if(atr =='clear') {
+        b.addEventListener('click', clearDisplay);
     }
 }
 
@@ -32,7 +43,6 @@ function insertOp() {
     //console.log(this.getAttribute('data'));
     if(!operators.includes(entry[entry.length-1])) {
         entry.push(this.getAttribute('data'));
-        updateDisplay();
     }
     else {
         console.log("You may not enter two operators in a row!");
@@ -43,7 +53,6 @@ function insertOp() {
 function insertNum() {
     //console.log(this.getAttribute('data'));
     entry.push(this.getAttribute('data'));
-    updateDisplay();
 }
 
 function updateDisplay() {
@@ -60,6 +69,16 @@ function updateDisplay() {
     display.textContent = toDisplay.join('');
 }
 
+function removeLastEntry() {
+    entry.pop();
+    updateDisplay();
+}
+
 function invalidInput() {
     display.style.animation = 'invalidShake .25s';
+}
+
+function clearDisplay() {
+    entry.length = 0;
+    updateDisplay();
 }
