@@ -2,8 +2,9 @@ let btns = document.querySelectorAll('.btn');
 let display = document.querySelector('.display');
 let previous = document.querySelector('.previous');
 
-const operators = ['multiply','divide','remainder', 'add', 'subtract'];
+const operators = ['power', 'multiply','divide','remainder', 'add', 'subtract'];
 const numbers = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+const funcs = ['sqrt', 'factorial'];
 
 //this uses the unique data value for each button to assign a function with the same value.
 //the data value for the + icon is add and so is its function.
@@ -18,6 +19,7 @@ btns.forEach(b => {
 });
 
 let entry = [];
+let currentANS;
 
 //okay this is fucking awesome just discovered this application of prototypes.
 //everytime we push to array we can update the display
@@ -43,6 +45,12 @@ function assignBtn(b) {
         b.addEventListener('click', insertLeftP);
     } else if(atr =='right-para') {
         b.addEventListener('click', insertRightP);
+    } else if(atr =='ANS') {
+        b.addEventListener('click', insertANS);
+    } else if(funcs.includes(atr)) {
+        b.addEventListener('click', insertFunc);
+    } else if(atr == '.') {
+        b.addEventListener('click', insertDecimal);
     }
 }
 
@@ -59,7 +67,7 @@ function insertOp() {
 
 function insertNum() {
     //console.log(this.getAttribute('data'));
-    if(numbers.includes(entry[entry.length-1])) {
+    if(numbers.includes(entry[entry.length-1]) || (entry.length != 0 && entry[entry.length-1].includes('.'))) {
         entry[entry.length-1] += this.getAttribute('data');
         updateDisplay();
     } else {
@@ -68,28 +76,59 @@ function insertNum() {
     
 }
 
-function insertLeftP() {
+function insertDecimal() {
+    console.log(entry);
+    if(entry.length != 0 && entry[entry.length-1].includes('.')) invalidInput();
+    else if(numbers.includes(entry[entry.length-1])) {
+        entry[entry.length-1] += this.getAttribute('data');
+        updateDisplay();
+    } else {
+        entry.push('0.');
+    }
+}
+
+function insertFunc() {
     entry.push(this.getAttribute('data'));
+    insertLeftP();
+    
+}
+
+function insertANS(){
+    if(currentANS != null)
+        entry.push(this.getAttribute('data'));
+    else invalidInput();
+}
+
+function insertLeftP() {
+    entry.push('left-para');
 }
 
 function insertRightP() {
-    let lpCount = 0;
-    let rpCount = 0;
-    entry.forEach(e => {
-        if(e == 'left-para') lpCount++;
-        else if(e == 'right-para') rpCount++; 
-    })
-    if(operators.includes(entry[entry.length-1]) || lpCount <= rpCount) {
+    let [lpCount, rpCount] = countPara();
+    if(operators.includes(entry[entry.length-1]) || lpCount <= rpCount || entry[entry.length-1] == 'left-para') {
         invalidInput();
     } else {
         entry.push('right-para');
     }
 }
 
+function countPara() {
+    let lpCount = 0;
+    let rpCount = 0;
+    entry.forEach(e => {
+        if(e == 'left-para') lpCount++;
+        else if(e == 'right-para') rpCount++; 
+    })
+
+    return [lpCount, rpCount];
+}
+
 function updateDisplay() {
     let toDisplay = entry.map(e => {
         
         switch(e) {
+            case 'factorial': return '!';
+            case 'sqrt': return '\u221A';
             case 'add': return '+';
             case 'subtract': return '-';
             case 'multiply': return '*';
@@ -97,6 +136,7 @@ function updateDisplay() {
             case 'remainder': return '%';
             case 'left-para':return '(';
             case 'right-para':return ')';
+            case 'power': return '^';
             default: return e;
         }
     });
@@ -118,15 +158,23 @@ function clearDisplay() {
 }
 
 function equals() {
+    
+    let [lpCount, rpCount] = countPara();
 
-    if(operators.includes(entry[entry.length-1]) && entry.length != 0) invalidInput();
+    if(operators.includes(entry[entry.length-1]) || entry.length == 0 || lpCount != rpCount) invalidInput();
     else {
 
-        
+        if(currentANS != null) {
+            for(let i = 0; i < entry.length; i++) {
+                entry[i] = entry[i] == 'ANS' ? currentANS : entry[i];
+            }
+        }
         calculate(entry);
+        funcs.forEach(f => handleFunc(f, entry));
         operators.forEach(o => handleOperator(o, entry));
 
         if(entry.length == 1) {
+            currentANS = entry[0];
             previous.textContent = 'ANS = ' + entry[0];
             entry.length = 0;
         }
@@ -137,9 +185,9 @@ function equals() {
 }
 
 function calculate(array) {
-    console.log(array);
-    console.log(findPara(array));
     for(;;) {
+        removeExtraDecimals(array);
+        fillMultipliers(array);
         let [subArray, lP, rP] = findPara(array);
         if(subArray != 0) {
             for(;lP < rP; rP--) {
@@ -147,6 +195,7 @@ function calculate(array) {
             }
             array[lP] = calculate(subArray);        
         } else {
+            funcs.forEach(f => handleFunc(f, array));
             operators.forEach(o => handleOperator(o, array));
             break;
         }
@@ -158,14 +207,37 @@ function calculate(array) {
     return array[0];
 }
 
+function handleFunc(func, array) {
+    for(;array.includes(func);) {
+        let fIndex = array.indexOf(func);
+
+        let val = array[fIndex+1];
+
+        switch(func) {
+            case 'sqrt': result = Math.sqrt(val); break;
+            case 'factorial': result = factorial(val);
+            default: console.log('Unexpected func');
+        }
+        
+        array.splice(fIndex, 1);
+        array[fIndex] = result;
+    }
+    
+}
+
+const factorial = function(a, total = 1) {
+	return a == 0 ? total : factorial(a - 1, total*a);
+};
+
 function handleOperator(operator, array) {
     for(;array.includes(operator);) {
-        let op = array.indexOf(operator);
+        let op = array.indexOf(operator);   
+        
         let a = array[op - 1];
         let b = array[op + 1];
         
-        
         switch(operator) {
+            case 'power': result = Math.pow(a,b); break;
             case 'multiply': result = a * b; break;
             case 'divide' : result = a / b; break;
             case 'remainder' : result = a % b; break;
@@ -190,4 +262,19 @@ function findPara(array) {
     }
 
     return [0,0,0];
+}
+
+function fillMultipliers(array) {
+    for(let i = 0; i < array.length - 1; i++) {
+        if((!isNaN(array[i]) || array[i] == 'ANS') && (!isNaN(array[i+1]) || array[i+1] == 'ANS')) {
+            array.splice(i+1, 0, 'multiply');
+        }
+    }
+}
+
+function removeExtraDecimals(array) {
+    for(let i = 0; i < array.length; i++) {
+        if(array[i][array[i].length - 1] == '.')
+            array[i] = array[i].substring(0, array[i].length - 1);
+    }
 }
