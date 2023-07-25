@@ -29,7 +29,10 @@ entry.push = function() {
 }
 
 function assignBtn(b) {
-    
+    b.addEventListener('click', alterColor);
+    b.addEventListener('animationend', () => {
+        b.style.animation = 'none';
+    });
     let atr = b.getAttribute('data');
     if(operators.includes(atr)) {
         b.addEventListener('click', insertOp);
@@ -54,6 +57,42 @@ function assignBtn(b) {
     }
 }
 
+function alterColor() {
+    this.style.animation = 'darken .1s'
+}
+
+window.addEventListener('keydown', key => {
+    console.log(key.code);
+    let findBtn = name => Array.from(btns).filter(b => b.getAttribute('data') == name)[0];
+    if(key.shiftKey) {
+        switch(key.code) {
+            case 'Digit9': findBtn('left-para').click(); break;
+            case 'Digit0': findBtn('right-para').click(); break;
+            case 'Digit5': findBtn('remainder').click(); break;
+            case 'Digit1': findBtn('factorial').click(); break;
+            case 'Digit6': findBtn('power').click(); break;       
+            case 'Equal': findBtn('add').click(); break;           
+            case 'Digit8': findBtn('multiply').click(); break;   
+        }
+    } else if(key.ctrlKey && key.code == 'KeyV') {
+        findBtn('ANS').click();
+    } else {
+        switch(key.code) {
+            case 'Enter': case 'NumpadEnter': case 'Equal': findBtn('equal').click(); break;
+            case 'Minus': case 'NumpadSubtract': findBtn('subtract').click(); break;
+            case 'NumpadAdd': findBtn('add').click(); break;
+            case 'NumpadMultiply': findBtn('multiply').click(); break; 
+            case 'NumpadDivide': case 'Slash': findBtn('divide').click(); break;
+            case 'Period': case 'NumpadDecimal': findBtn('.').click(); break;
+            case 'Backspace': findBtn('backspace').click(); break;
+        }
+
+        if(key.code.substring(0, key.code.length-1) == 'Digit'|| (key.code.substring(0, key.code.length-1) == 'Numpad' && !isNaN(key.code[key.code.length-1]))) {
+            findBtn(key.code[key.code.length-1]).click();
+        }
+    }
+});
+
 function insertOp() {
     //console.log(this.getAttribute('data'));
     if(!operators.includes(entry[entry.length-1]) && entry.length != 0) {
@@ -67,7 +106,7 @@ function insertOp() {
 
 function insertNum() {
     //console.log(this.getAttribute('data'));
-    if(numbers.includes(entry[entry.length-1]) || (entry.length != 0 && entry[entry.length-1].includes('.'))) {
+    if(!isNaN(entry[entry.length-1]) || (entry.length != 0 && entry[entry.length-1].includes('.'))) {
         entry[entry.length-1] += this.getAttribute('data');
         updateDisplay();
     } else {
@@ -77,9 +116,8 @@ function insertNum() {
 }
 
 function insertDecimal() {
-    console.log(entry);
     if(entry.length != 0 && entry[entry.length-1].includes('.')) invalidInput();
-    else if(numbers.includes(entry[entry.length-1])) {
+    else if(!isNaN(entry[entry.length-1])) {
         entry[entry.length-1] += this.getAttribute('data');
         updateDisplay();
     } else {
@@ -144,7 +182,12 @@ function updateDisplay() {
 }
 
 function removeLastEntry() {
-    entry.pop();
+    //if the last index of the entry is a string of numbers that just delete that last index of the string
+    //if it is just a value in the entry array we can just pop it
+    if(entry[entry.length-1].length > 1 && !isNaN(entry[entry.length-1]))
+        entry[entry.length-1] = entry[entry.length-1].substring(0, entry[entry.length-1].length-1);
+    else
+        entry.pop();
     updateDisplay();
 }
 

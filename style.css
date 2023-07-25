@@ -1,3 +1,8 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto&display=swap');
+
+* {
+    font-family: 'Roboto', sans-serif;
+}
 
 .container{
     display: flex;
@@ -12,7 +17,7 @@
     padding: 10px;
     border: black solid 1px;
     border-radius: 10px;
-    background-color: aqua;
+    background-color: lightgray;
 }
 .row > .previous {
     display: flex;
@@ -59,9 +64,16 @@
     
 }
 
-.row .btn:hover {
-    background-color: teal;
+
+
+.btn:hover {
+    filter: brightness(75%);
 }
+
+.btn:active{
+    filter: brightness(50%);
+}
+
 
 sup {
     position: relative;
@@ -74,4 +86,25 @@ sup {
     50% { transform: translateX(-5px) }
     75% { transform: translateX(5px) }
     100% { transform: translateX(0); }
+}
+
+@keyframes darken {
+    0% { filter: brightness(100%);}
+    100% { filter: brightness(50%);}
+}
+
+.btn.basic {
+    background-color: lightblue;
+}
+
+.btn.enter {
+    background-color: lightgreen;
+}
+
+.btn.removal{
+    background-color: lightcoral;
+}
+
+.btn.special{
+    background-color: lightsalmon;
 }
