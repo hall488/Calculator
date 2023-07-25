@@ -85,6 +85,7 @@ window.addEventListener('keydown', key => {
             case 'NumpadDivide': case 'Slash': findBtn('divide').click(); break;
             case 'Period': case 'NumpadDecimal': findBtn('.').click(); break;
             case 'Backspace': findBtn('backspace').click(); break;
+            case 'Delete': findBtn('clear').click();
         }
 
         if(key.code.substring(0, key.code.length-1) == 'Digit'|| (key.code.substring(0, key.code.length-1) == 'Numpad' && !isNaN(key.code[key.code.length-1]))) {
@@ -184,7 +185,7 @@ function updateDisplay() {
 function removeLastEntry() {
     //if the last index of the entry is a string of numbers that just delete that last index of the string
     //if it is just a value in the entry array we can just pop it
-    if(entry[entry.length-1].length > 1 && !isNaN(entry[entry.length-1]))
+    if(entry.length != 0 && entry[entry.length-1].length > 1 && !isNaN(entry[entry.length-1]))
         entry[entry.length-1] = entry[entry.length-1].substring(0, entry[entry.length-1].length-1);
     else
         entry.pop();
@@ -239,6 +240,7 @@ function calculate(array) {
             array[lP] = calculate(subArray);        
         } else {
             funcs.forEach(f => handleFunc(f, array));
+            fillMultipliers(array);
             operators.forEach(o => handleOperator(o, array));
             break;
         }
@@ -258,8 +260,8 @@ function handleFunc(func, array) {
 
         switch(func) {
             case 'sqrt': result = Math.sqrt(val); break;
-            case 'factorial': result = factorial(val);
-            default: console.log('Unexpected func');
+            case 'factorial': result = factorial(val); break;
+            default: console.log('Unexpected func'); break;
         }
         
         array.splice(fIndex, 1);
